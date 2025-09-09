@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { List, ListItem, ListItemText, IconButton, Typography, Box } from '@mui/material';
+import Paper from '@mui/material/Paper';
 import DeleteIcon from '@mui/icons-material/Delete';
 
 const DocumentList = ({ refreshTrigger }) => {
@@ -32,7 +33,7 @@ const DocumentList = ({ refreshTrigger }) => {
   };
 
   return (
-    <Box sx={{ mb: 3 }}>
+    <Paper elevation={3} sx={{ p: 2, borderRadius: 3, boxShadow: 3, mb: 3 }}>
       <Typography variant="h6" sx={{ mb: 1 }}>Uploaded Documents</Typography>
       {error && <Typography color="error">{error}</Typography>}
       <List>
@@ -52,7 +53,7 @@ const DocumentList = ({ refreshTrigger }) => {
           <Typography sx={{ color: '#888', mt: 2 }}>No documents uploaded yet.</Typography>
         )}
       </List>
-    </Box>
+    </Paper>
   );
 };
 
