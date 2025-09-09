@@ -159,7 +159,7 @@ app.post('/api/search', express.json(), async (req, res) => {
   res.json({ answer, sources });
 });
 
-// Completeness check (mock)
+// Completeness check
 app.post('/api/completeness', express.json(), (req, res) => {
   const { answer } = req.body;
   let confidence = 0.3;
@@ -175,11 +175,42 @@ app.post('/api/completeness', express.json(), (req, res) => {
 });
 
 // Enrichment suggestions (mock)
+// Enrichment suggestions (improved)
 app.post('/api/enrich', express.json(), (req, res) => {
   const { answer } = req.body;
-  const suggestions = answer.includes('No relevant info')
-    ? ['Upload more documents', 'Try a different query']
-    : ['Add recent reports', 'Include more detailed files'];
+  let suggestions = [];
+
+  // Check for uncertainty or lack of info
+  if (/no relevant info|not enough info|cannot answer|don't know|insufficient|uncertain/i.test(answer)) {
+    suggestions.push('Upload more documents');
+    suggestions.push('Try a different query');
+  }
+
+  // Check for lack of sources
+  if (!/source|document|\.txt|reference|cited/i.test(answer)) {
+    suggestions.push('Include more cited sources in your documents');
+  }
+
+  // Check for short or vague answers
+  if (answer.length < 50) {
+    suggestions.push('Add more detailed files');
+  }
+
+  // Extract keywords/topics from the answer (simple approach)
+  const keywordMatches = answer.match(/\b([A-Z][a-zA-Z]{3,})\b/g);
+  if (keywordMatches && keywordMatches.length > 0) {
+    const uniqueKeywords = [...new Set(keywordMatches)].slice(0, 3);
+    uniqueKeywords.forEach(kw => {
+      suggestions.push(`Upload documents about "${kw}"`);
+    });
+  }
+
+  // Fallback if no suggestions
+  if (suggestions.length === 0) {
+    suggestions.push('Add recent reports');
+    suggestions.push('Include more detailed files');
+  }
+
   res.json({ suggestions });
 });
 
