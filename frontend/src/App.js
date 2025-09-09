@@ -8,15 +8,12 @@ import EnrichmentSuggestions from './components/EnrichmentSuggestions';
 import axios from 'axios';
 import { Container, Grid, Box, Button } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import { Drawer, Toolbar, List, ListItem, ListItemIcon, ListItemText, AppBar } from '@mui/material';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
-import SearchIcon from '@mui/icons-material/Search';
 import ArticleIcon from '@mui/icons-material/Article';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward'; 
 
 function App() {
   const [tab, setTab] = useState(0);
@@ -119,6 +116,16 @@ function App() {
             <Box sx={{ width: '100%', maxWidth: 700, bgcolor: 'background.paper', borderRadius: 4, boxShadow: '0 2px 16px #e3e3e3', p: 2, display: 'flex', alignItems: 'center' }}>
               <Box sx={{ flexGrow: 1 }}>
                 <SearchBox onSearchResult={handleSearchResult} onError={handleError} />
+                {/* Show OpenAI answer below search bar */}
+                {searchResult && searchResult.answer && (
+                  <Box sx={{ mt: 3, p: 2, bgcolor: '#f7f7fa', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3' }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>AI Response</Typography>
+                    <Typography variant="body1" sx={{ color: '#222' }}>{searchResult.answer}</Typography>
+                  </Box>
+                )}
+                {searchResult && !searchResult.answer && (
+                  <Typography color="error" sx={{ mt: 2 }}>No answer found.</Typography>
+                )}
               </Box>
             </Box>
           </Box>
