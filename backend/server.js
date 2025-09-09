@@ -1,10 +1,9 @@
-
-
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { OpenAI } from 'openai';
+import dotenv from 'dotenv/config';
 
 // Load OpenAI API key from environment variable
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
@@ -82,22 +81,37 @@ app.delete('/api/documents/:id', (req, res) => {
 // Search documents (OpenAI integration)
 app.post('/api/search', express.json(), async (req, res) => {
   const { query } = req.body;
+  console.log('Received /api/search request:', { query });
+  // Check API key
+  if (!process.env.OPENAI_API_KEY) {
+    console.error('OpenAI API key missing!');
+    return res.status(500).json({ answer: 'OpenAI API key missing.', sources: [] });
+  }
   // Read all document contents
   let context = '';
   let sources = [];
   for (const doc of documents) {
     try {
-      const content = fs.readFileSync(doc.path, 'utf-8');
+      // Log file type
+      const ext = path.extname(doc.name).toLowerCase();
+      console.log(`Reading document: ${doc.name}, extension: ${ext}`);
+      let content = '';
+      if (ext === '.txt') {
+        content = fs.readFileSync(doc.path, 'utf-8');
+      } else {
+        content = '[Non-text file. Please upload .txt files for best results.]';
+      }
       context += `Document: ${doc.name}\n${content}\n\n`;
       sources.push({ id: doc.id, name: doc.name });
     } catch (e) {
-      // File read error
+      console.error(`Error reading file ${doc.name}:`, e);
     }
   }
   // Compose prompt for OpenAI
   const prompt = `You are an expert assistant. Given the following documents and a user question, answer using only the information in the documents. Cite the document names in your answer.\n\n${context}\nUser question: ${query}`;
   let answer = '';
   try {
+    console.log('Sending prompt to OpenAI:', prompt.slice(0, 500)); // Log first 500 chars
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
@@ -107,7 +121,9 @@ app.post('/api/search', express.json(), async (req, res) => {
       max_tokens: 300
     });
     answer = completion.choices[0].message.content;
+    console.log('OpenAI response:', answer);
   } catch (err) {
+    console.error('Error from OpenAI:', err);
     answer = 'Error generating answer from OpenAI.';
   }
   res.json({ answer, sources });
