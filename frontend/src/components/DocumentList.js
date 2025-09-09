@@ -4,7 +4,7 @@ import { List, ListItem, ListItemText, IconButton, Typography, Box } from '@mui/
 import Paper from '@mui/material/Paper';
 import DeleteIcon from '@mui/icons-material/Delete';
 
-const DocumentList = ({ refreshTrigger }) => {
+const DocumentList = ({ refreshTrigger, searchTerm }) => {
   const [documents, setDocuments] = useState([]);
   const [error, setError] = useState('');
 
@@ -37,7 +37,9 @@ const DocumentList = ({ refreshTrigger }) => {
       <Typography variant="h6" sx={{ mb: 1 }}>Uploaded Documents</Typography>
       {error && <Typography color="error">{error}</Typography>}
       <List>
-        {documents.map(doc => (
+        {(documents.filter(doc =>
+          !searchTerm || doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+        )).map(doc => (
           <ListItem
             key={doc.id}
             secondaryAction={
@@ -49,8 +51,10 @@ const DocumentList = ({ refreshTrigger }) => {
             <ListItemText primary={doc.name} secondary={`Uploaded: ${new Date(doc.uploadedAt).toLocaleString()}`} />
           </ListItem>
         ))}
-        {documents.length === 0 && (
-          <Typography sx={{ color: '#888', mt: 2 }}>No documents uploaded yet.</Typography>
+        {documents.filter(doc =>
+          !searchTerm || doc.name.toLowerCase().includes(searchTerm.toLowerCase())
+        ).length === 0 && (
+          <Typography sx={{ color: '#888', mt: 2 }}>No documents found.</Typography>
         )}
       </List>
     </Paper>

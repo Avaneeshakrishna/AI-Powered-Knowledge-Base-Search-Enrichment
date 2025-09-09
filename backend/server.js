@@ -174,7 +174,6 @@ app.post('/api/completeness', express.json(), (req, res) => {
   res.json({ confidence });
 });
 
-// Enrichment suggestions (mock)
 // Enrichment suggestions (improved)
 app.post('/api/enrich', express.json(), (req, res) => {
   const { answer } = req.body;

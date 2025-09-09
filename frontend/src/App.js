@@ -34,6 +34,7 @@ function App() {
   const [searchResult, setSearchResult] = useState(null);
   const [confidence, setonfidence] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'info' });
 
   const handleUploadSuccess = () => {
@@ -149,9 +150,9 @@ function App() {
                     type="text"
                     placeholder="Search by name..."
                     style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none', fontSize: 13, marginBottom: 8 }}
-                    onChange={e => setSuggestions(e.target.value)}
+                    onChange={e => setSearchTerm(e.target.value)}
                   />
-                  <DocumentList refreshTrigger={refreshDocs} onError={handleError} searchTerm={suggestions} />
+                  <DocumentList refreshTrigger={refreshDocs} onError={handleError} searchTerm={searchTerm} />
                 </Box>
               )}
               {/* Upload Tab */}
