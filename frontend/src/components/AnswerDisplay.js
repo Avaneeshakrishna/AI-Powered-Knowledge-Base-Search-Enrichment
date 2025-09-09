@@ -12,7 +12,17 @@ const AnswerDisplay = ({ answer, sources }) => {
           <Box>
             <Typography variant="subtitle2">Source Documents:</Typography>
             {sources.map(src => (
-              <Chip key={src.id} label={src.name} sx={{ mr: 1, mt: 1 }} />
+              <Chip
+                key={src.id}
+                label={src.name}
+                color="primary"
+                sx={{
+                  mr: 1,
+                  mt: 1,
+                  boxShadow: '0 0 2px 2px #1976d2',
+                  fontWeight: 600,
+                }}
+              />
             ))}
           </Box>
         )}

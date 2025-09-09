@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import { Button, Box, Typography, LinearProgress } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
 const DocumentUpload = ({ onUploadSuccess }) => {
   const fileInputRef = useRef();
@@ -39,24 +40,46 @@ const DocumentUpload = ({ onUploadSuccess }) => {
   return (
     <Box
       sx={{
-        border: '2px dashed #1976d2',
-        borderRadius: 2,
-        p: 2,
+        border: '2px dashed #d0d5dd',
+        borderRadius: 4,
+        p: 4,
         textAlign: 'center',
         mb: 2,
-        bgcolor: '#f5f5f5'
+        bgcolor: '#fff',
+        minHeight: 260,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        boxShadow: '0 2px 16px #f3f3f3',
       }}
       onDrop={handleDrop}
       onDragOver={e => e.preventDefault()}
     >
-      <Typography variant="h6">Upload .txt Documents</Typography>
+      <CloudUploadIcon sx={{ fontSize: 48, color: '#888', mb: 2, bgcolor: '#f7f7fa', borderRadius: '50%', p: 1 }} />
+      <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Upload Documents</Typography>
+      <Typography variant="body2" sx={{ color: '#888', mb: 3 }}>
+        Drag and drop your files here, or click to browse
+      </Typography>
       <Button
         variant="contained"
         onClick={() => fileInputRef.current.click()}
         disabled={uploading}
-        sx={{ mt: 2 }}
+        sx={{
+          borderRadius: 6,
+          px: 4,
+          py: 1.5,
+          fontWeight: 600,
+          fontSize: 16,
+          bgcolor: '#f7f7fa',
+          color: '#222',
+          boxShadow: '0 2px 8px #e3e3e3',
+          textTransform: 'none',
+          mb: 2,
+          '&:hover': { bgcolor: '#e3e3e3' }
+        }}
       >
-        Select Files
+        Browse Files
       </Button>
       <input
         type="file"
@@ -66,9 +89,8 @@ const DocumentUpload = ({ onUploadSuccess }) => {
         ref={fileInputRef}
         onChange={handleInputChange}
       />
-      {uploading && <LinearProgress variant="determinate" value={progress} sx={{ mt: 2 }} />}
+      {uploading && <LinearProgress variant="determinate" value={progress} sx={{ mt: 2, width: '100%' }} />}
       {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
-      <Typography sx={{ mt: 2, color: '#888' }}>Or drag and drop files here</Typography>
     </Box>
   );
 };
