@@ -8,8 +8,6 @@ import EnrichmentSuggestions from './components/EnrichmentSuggestions';
 import axios from 'axios';
 import { Container, Grid, Box, Button } from '@mui/material';
 import Typography from '@mui/material/Typography';
-import UploadFileIcon from '@mui/icons-material/UploadFile';
-import ArticleIcon from '@mui/icons-material/Article';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Snackbar from '@mui/material/Snackbar';
@@ -100,12 +98,12 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {/* Top header with logo, title, subtitle */}
-      <Box sx={{ width: '100%', bgcolor: 'background.paper', pt: 3, pb: 2, boxShadow: '0 2px 8px #e3e3e3' }}>
+  <Box sx={{ width: '100%', bgcolor: 'transparent', pt: 3, pb: 2, boxShadow: '0 2px 8px #e3e3e3' }}>
         <Container maxWidth="md">
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-            <Box sx={{ mr: 2, width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 5 }}>
+              <Box sx={{ mr: 2, width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 <img src="/brain-logo.png" alt="logo" style={{ width: 36, height: 36 }} />
-            </Box>
+              </Box>
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 700 }}>AI Knowledge Base</Typography>
               <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Search, analyze, and enrich your documents with AI</Typography>
@@ -113,66 +111,67 @@ function App() {
           </Box>
           {/* Centered search bar */}
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-            <Box sx={{ width: '100%', maxWidth: 700, bgcolor: 'background.paper', borderRadius: 4, boxShadow: '0 2px 16px #e3e3e3', p: 2, display: 'flex', alignItems: 'center' }}>
-              <Box sx={{ flexGrow: 1 }}>
-                <SearchBox onSearchResult={handleSearchResult} onError={handleError} />
-                {/* Show OpenAI answer below search bar */}
-                {searchResult && searchResult.answer && (
-                  <Box sx={{ mt: 3, p: 2, bgcolor: '#f7f7fa', borderRadius: 3, boxShadow: '0 2px 8px #e3e3e3' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>AI Response</Typography>
-                    <Typography variant="body1" sx={{ color: '#222' }}>{searchResult.answer}</Typography>
-                  </Box>
-                )}
-                {searchResult && !searchResult.answer && (
-                  <Typography color="error" sx={{ mt: 2 }}>No answer found.</Typography>
-                )}
-              </Box>
+            <Box sx={{ width: '100%', maxWidth: 700 }}>
+              <SearchBox onSearchResult={handleSearchResult} onError={handleError} />
             </Box>
           </Box>
         </Container>
       </Box>
       {/* Main content below header */}
       <Container maxWidth="md" sx={{ py: 4 }}>
-        {/* Tabs for Documents/Upload */}
-        <Box sx={{ display: 'flex', justifyContent: 'center', mb: 3 }}>
-          <Box sx={{
-            display: 'flex',
-            bgcolor: '#f7f7fa',
-            borderRadius: 8,
-            boxShadow: '0 2px 8px #e3e3e3',
-            p: 0.5,
-            gap: 1,
-            width: 340,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}>
-            <TabButton
-              active={tab === 0}
-              icon={<ArticleIcon sx={{ mr: 1 }} />}
-              label="Documents"
-              onClick={() => setTab(0)}
-            />
-            <TabButton
-              active={tab === 1}
-              icon={<UploadFileIcon sx={{ mr: 1 }} />}
-              label="Upload"
-              onClick={() => setTab(1)}
-            />
-          </Box>
-        </Box>
         <Grid container spacing={4} alignItems="flex-start">
-          <Grid item xs={12} md={6}>
-            <Box sx={{ mb: 4 }}>
-              {tab === 0 ? (
-                <DocumentList refreshTrigger={refreshDocs} onError={handleError} />
-              ) : null}
+          {/* Left side: Compact document upload and list with tab switch and search */}
+          <Grid item xs={12} md={4}>
+            <Box sx={{ bgcolor: 'transparent', borderRadius: 3, boxShadow: 'none', p: 2, minWidth: 220, maxWidth: 320, mx: 'auto' }}>
+              {/* Tabs */}
+              <Box sx={{ display: 'flex', mb: 2, gap: 1 }}>
+                <Button
+                  variant={tab === 0 ? 'contained' : 'text'}
+                  size="small"
+                  onClick={() => setTab(0)}
+                  sx={{ flex: 1, borderRadius: 2, fontSize: 13, fontWeight: 600, textTransform: 'none' }}
+                >
+                  Documents
+                </Button>
+                <Button
+                  variant={tab === 1 ? 'contained' : 'text'}
+                  size="small"
+                  onClick={() => setTab(1)}
+                  sx={{ flex: 1, borderRadius: 2, fontSize: 13, fontWeight: 600, textTransform: 'none' }}
+                >
+                  Upload
+                </Button>
+              </Box>
+              {/* Document Search */}
+              {tab === 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <input
+                    type="text"
+                    placeholder="Search by name..."
+                    style={{ width: '100%', padding: '6px 10px', borderRadius: 6, border: 'none', fontSize: 13, marginBottom: 8 }}
+                    onChange={e => setSuggestions(e.target.value)}
+                  />
+                  <DocumentList refreshTrigger={refreshDocs} onError={handleError} searchTerm={suggestions} />
+                </Box>
+              )}
+              {/* Upload Tab */}
+              {tab === 1 && (
+                <Box sx={{ mb: 2 }}>
+                  <DocumentUpload onUploadSuccess={handleUploadSuccess} onError={handleError} compact />
+                </Box>
+              )}
             </Box>
           </Grid>
+          {/* Right side: AI answer, completeness, enrichment */}
           <Grid item xs={12} md={6}>
             <Box sx={{ mb: 4 }}>
-              {tab === 1 ? (
-                <DocumentUpload onUploadSuccess={handleUploadSuccess} onError={handleError} />
-              ) : null}
+              <AnswerDisplay answer={searchResult && searchResult.answer} />
+              <Box sx={{ mt: 3 }}>
+                <CompletenessGauge confidence={confidence} />
+              </Box>
+              <Box sx={{ mt: 3 }}>
+                <EnrichmentSuggestions suggestions={suggestions} />
+              </Box>
             </Box>
           </Grid>
         </Grid>

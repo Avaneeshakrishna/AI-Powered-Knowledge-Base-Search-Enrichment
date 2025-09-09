@@ -31,10 +31,19 @@ const SearchBox = ({ onSearchResult }) => {
         onChange={e => setQuery(e.target.value)}
         disabled={loading}
         sx={{ mb: 2 }}
+        InputProps={{
+          endAdornment: (
+            <Button
+              variant="text"
+              onClick={handleSearch}
+              disabled={loading || !query.trim()}
+              sx={{ minWidth: 0, p: 0, ml: 1 }}
+            >
+              <span role="img" aria-label="search" style={{ fontSize: 22 }}>🔍</span>
+            </Button>
+          ),
+        }}
       />
-      <Button variant="contained" onClick={handleSearch} disabled={loading || !query.trim()}>
-        Search
-      </Button>
       {loading && <CircularProgress size={24} sx={{ ml: 2 }} />}
       {error && <Typography color="error" sx={{ mt: 2 }}>{error}</Typography>}
     </Box>
