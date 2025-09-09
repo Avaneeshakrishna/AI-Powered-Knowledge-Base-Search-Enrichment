@@ -1,8 +1,10 @@
+
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
 import { OpenAI } from 'openai';
+// import pdfParse from 'pdf-parse';
 import dotenv from 'dotenv/config';
 
 // Load OpenAI API key from environment variable
@@ -10,7 +12,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 const app = express();
 const port = 4000;
-const DOCS_DIR = path.join(process.cwd(), 'backend', 'documents');
+const DOCS_DIR = path.join(process.cwd(), 'documents');
 
 // Ensure documents directory exists
 if (!fs.existsSync(DOCS_DIR)) {
@@ -19,6 +21,9 @@ if (!fs.existsSync(DOCS_DIR)) {
 
 // In-memory metadata store
 let documents = [];
+
+// On startup, clear documents array to avoid referencing missing files
+documents = [];
 
 // Multer setup for file uploads (disk storage)
 const storage = multer.diskStorage({
@@ -82,24 +87,29 @@ app.delete('/api/documents/:id', (req, res) => {
 app.post('/api/search', express.json(), async (req, res) => {
   const { query } = req.body;
   console.log('Received /api/search request:', { query });
-  // Check API key
   if (!process.env.OPENAI_API_KEY) {
     console.error('OpenAI API key missing!');
     return res.status(500).json({ answer: 'OpenAI API key missing.', sources: [] });
   }
-  // Read all document contents
+  if (!documents || documents.length === 0) {
+    console.warn('No documents uploaded.');
+    return res.status(400).json({ answer: 'No documents uploaded. Please upload documents before searching.', sources: [] });
+  }
   let context = '';
   let sources = [];
   for (const doc of documents) {
     try {
-      // Log file type
       const ext = path.extname(doc.name).toLowerCase();
       console.log(`Reading document: ${doc.name}, extension: ${ext}`);
       let content = '';
+      if (!fs.existsSync(doc.path)) {
+        console.warn(`File not found: ${doc.path}. Skipping.`);
+        continue;
+      }
       if (ext === '.txt') {
         content = fs.readFileSync(doc.path, 'utf-8');
       } else {
-        content = '[Non-text file. Please upload .txt files for best results.]';
+        content = '[Unsupported file type. Only .txt files are supported.]';
       }
       context += `Document: ${doc.name}\n${content}\n\n`;
       sources.push({ id: doc.id, name: doc.name });
@@ -107,11 +117,10 @@ app.post('/api/search', express.json(), async (req, res) => {
       console.error(`Error reading file ${doc.name}:`, e);
     }
   }
-  // Compose prompt for OpenAI
   const prompt = `You are an expert assistant. Given the following documents and a user question, answer using only the information in the documents. Cite the document names in your answer.\n\n${context}\nUser question: ${query}`;
   let answer = '';
   try {
-    console.log('Sending prompt to OpenAI:', prompt.slice(0, 500)); // Log first 500 chars
+    console.log('Sending prompt to OpenAI:', prompt.slice(0, 500));
     const completion = await openai.chat.completions.create({
       model: 'gpt-3.5-turbo',
       messages: [
