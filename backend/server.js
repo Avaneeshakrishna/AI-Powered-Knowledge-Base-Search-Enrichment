@@ -162,8 +162,15 @@ app.post('/api/search', express.json(), async (req, res) => {
 // Completeness check (mock)
 app.post('/api/completeness', express.json(), (req, res) => {
   const { answer } = req.body;
-  // Mock: confidence based on answer length
-  const confidence = answer.length > 30 ? 0.8 : 0.3;
+  let confidence = 0.3;
+  // Increase confidence for longer answers
+  if (answer.length > 30) confidence += 0.3;
+  // Increase confidence if sources are cited
+  if (/source|document|\.txt|reference|cited/i.test(answer)) confidence += 0.2;
+  // Lower confidence if uncertainty phrases are present
+  if (/not enough info|cannot answer|don't know|insufficient|uncertain/i.test(answer)) confidence -= 0.3;
+  // Clamp between 0 and 1
+  confidence = Math.max(0, Math.min(1, confidence));
   res.json({ confidence });
 });
 
