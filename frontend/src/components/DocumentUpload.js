@@ -56,7 +56,10 @@ const DocumentUpload = ({ onUploadSuccess }) => {
       onDrop={handleDrop}
       onDragOver={e => e.preventDefault()}
     >
-      <CloudUploadIcon sx={{ fontSize: 48, color: '#888', mb: 2, bgcolor: '#f7f7fa', borderRadius: '50%', p: 1 }} />
+      {/* Make the upload icon clickable to trigger file input */}
+      <Box onClick={() => fileInputRef.current.click()} sx={{ cursor: 'pointer', mb: 2 }}>
+        <CloudUploadIcon sx={{ fontSize: 48, color: '#888', bgcolor: '#f7f7fa', borderRadius: '50%', p: 1 }} />
+      </Box>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Upload Documents</Typography>
       <Typography variant="body2" sx={{ color: '#888', mb: 3 }}>
         Drag and drop your files here, or click to browse
