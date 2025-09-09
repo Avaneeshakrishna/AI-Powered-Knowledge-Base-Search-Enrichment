@@ -19,11 +19,26 @@ if (!fs.existsSync(DOCS_DIR)) {
   fs.mkdirSync(DOCS_DIR, { recursive: true });
 }
 
+
 // In-memory metadata store
 let documents = [];
 
-// On startup, clear documents array to avoid referencing missing files
-documents = [];
+// On startup, scan documents folder and rebuild documents array
+try {
+  const files = fs.readdirSync(DOCS_DIR);
+  documents = files.filter(f => f.endsWith('.txt')).map(f => {
+    const stats = fs.statSync(path.join(DOCS_DIR, f));
+    return {
+      id: stats.birthtimeMs + Math.random(),
+      name: f.split('-').slice(1).join('-'),
+      filename: f,
+      path: path.join(DOCS_DIR, f),
+      uploadedAt: stats.birthtime
+    };
+  });
+} catch (e) {
+  documents = [];
+}
 
 // Multer setup for file uploads (disk storage)
 const storage = multer.diskStorage({
@@ -95,9 +110,15 @@ app.post('/api/search', express.json(), async (req, res) => {
     console.warn('No documents uploaded.');
     return res.status(400).json({ answer: 'No documents uploaded. Please upload documents before searching.', sources: [] });
   }
+
+  // Detect if query mentions a specific document
+  const lowerQuery = query.toLowerCase();
+  const mentionedDocs = documents.filter(doc => lowerQuery.includes(doc.name.toLowerCase()));
+  let docsToUse = mentionedDocs.length > 0 ? mentionedDocs : documents;
+
   let context = '';
   let sources = [];
-  for (const doc of documents) {
+  for (const doc of docsToUse) {
     try {
       const ext = path.extname(doc.name).toLowerCase();
       console.log(`Reading document: ${doc.name}, extension: ${ext}`);
