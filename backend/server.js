@@ -163,14 +163,19 @@ app.post('/api/search', express.json(), async (req, res) => {
 app.post('/api/completeness', express.json(), (req, res) => {
   const { answer } = req.body;
   let confidence = 0.3;
-  // Increase confidence for longer answers
-  if (answer.length > 30) confidence += 0.3;
-  // Increase confidence if sources are cited
-  if (/source|document|\.txt|reference|cited/i.test(answer)) confidence += 0.2;
-  // Lower confidence if uncertainty phrases are present
-  if (/not enough info|cannot answer|don't know|insufficient|uncertain/i.test(answer)) confidence -= 0.3;
-  // Clamp between 0 and 1
-  confidence = Math.max(0, Math.min(1, confidence));
+  // Lower confidence for generic, non-informative, or unavailable information answers
+  if (/cannot summarize|cannot provide a summary|unable to summarize|only code|no textual content|not textual|no summary available|no summary|no content to summarize|not possible to summarize|not possible|no information|no info|no useful information|no useful content|no answer|not explicitly mentioned|cannot determine|not found in the documents|not found|no information about the author|no author mentioned|author not mentioned|author unknown|no author info|no author information|no author found|no details about the author|no details found|no details available|no details provided|no details/i.test(answer)) {
+    confidence = 0.1;
+  } else {
+    // Increase confidence for longer answers
+    if (answer.length > 30) confidence += 0.3;
+    // Increase confidence if sources are cited
+    if (/source|document|\.txt|reference|cited/i.test(answer)) confidence += 0.2;
+    // Lower confidence if uncertainty phrases are present
+    if (/not enough info|cannot answer|don't know|insufficient|uncertain/i.test(answer)) confidence -= 0.3;
+    // Clamp between 0 and 1
+    confidence = Math.max(0, Math.min(1, confidence));
+  }
   res.json({ confidence });
 });
 
