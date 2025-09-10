@@ -100,4 +100,4 @@ This approach combines document management, semantic search, and AI-driven feedb
 - **Source Highlighting:** Add visual highlighting for source citations in the answer display.
 
 ## Contact
-For questions or contributions, contact [Avaneeshakrishna](mailto:avaneesh.shastry@gmail.com).
+For questions or contributions, contact [Avaneeshakrishna](mailto:akshastry.chakracodi@gmail.com).
