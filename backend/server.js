@@ -1,4 +1,3 @@
-
 import express from 'express';
 import multer from 'multer';
 import fs from 'fs';
@@ -65,12 +64,15 @@ app.use((req, res, next) => {
 app.post('/api/upload', upload.array('files'), (req, res) => {
   req.files.forEach(file => {
     const id = Date.now() + Math.random();
+    // parentId from formData (if present)
+    let parentId = req.body.parentId || null;
     documents.push({
       id,
       name: file.originalname,
       filename: file.filename,
       path: file.path,
-      uploadedAt: new Date().toISOString()
+      uploadedAt: new Date().toISOString(),
+      parentId
     });
   });
   res.json({ success: true, count: documents.length });
@@ -118,6 +120,7 @@ app.post('/api/search', express.json(), async (req, res) => {
 
   let context = '';
   let sources = [];
+  let allEmpty = true;
   for (const doc of docsToUse) {
     try {
       const ext = path.extname(doc.name).toLowerCase();
@@ -132,29 +135,34 @@ app.post('/api/search', express.json(), async (req, res) => {
       } else {
         content = '[Unsupported file type. Only .txt files are supported.]';
       }
+      if (content.trim().length > 0) allEmpty = false;
       context += `Document: ${doc.name}\n${content}\n\n`;
       sources.push({ id: doc.id, name: doc.name });
     } catch (e) {
       console.error(`Error reading file ${doc.name}:`, e);
     }
   }
-  const prompt = `You are an expert assistant. Given the following documents and a user question, answer using only the information in the documents. Cite the document names in your answer.\n\n${context}\nUser question: ${query}`;
   let answer = '';
-  try {
-    console.log('Sending prompt to OpenAI:', prompt.slice(0, 500));
-    const completion = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [
-        { role: 'system', content: 'You answer questions using only the provided documents and cite sources.' },
-        { role: 'user', content: prompt }
-      ],
-      max_tokens: 300
-    });
-    answer = completion.choices[0].message.content;
-    console.log('OpenAI response:', answer);
-  } catch (err) {
-    console.error('Error from OpenAI:', err);
-    answer = 'Error generating answer from OpenAI.';
+  if (allEmpty) {
+    answer = 'The selected documents are empty and contain no content to analyze. Please upload documents with actual information.';
+  } else {
+    const prompt = `You are an expert assistant. Given the following documents and a user question, answer using only the information in the documents. Cite the document names in your answer.\n\n${context}\nUser question: ${query}`;
+    try {
+      console.log('Sending prompt to OpenAI:', prompt.slice(0, 500));
+      const completion = await openai.chat.completions.create({
+        model: 'gpt-3.5-turbo',
+        messages: [
+          { role: 'system', content: 'You answer questions using only the provided documents and cite sources.' },
+          { role: 'user', content: prompt }
+        ],
+        max_tokens: 300
+      });
+      answer = completion.choices[0].message.content;
+      console.log('OpenAI response:', answer);
+    } catch (err) {
+      console.error('Error from OpenAI:', err);
+      answer = 'Error generating answer from OpenAI.';
+    }
   }
   res.json({ answer, sources });
 });
@@ -163,8 +171,10 @@ app.post('/api/search', express.json(), async (req, res) => {
 app.post('/api/completeness', express.json(), (req, res) => {
   const { answer } = req.body;
   let confidence = 0.3;
-  // Lower confidence for generic, non-informative, or unavailable information answers
-  if (/cannot summarize|cannot provide a summary|unable to summarize|only code|no textual content|not textual|no summary available|no summary|no content to summarize|not possible to summarize|not possible|no information|no info|no useful information|no useful content|no answer|not explicitly mentioned|cannot determine|not found in the documents|not found|no information about the author|no author mentioned|author not mentioned|author unknown|no author info|no author information|no author found|no details about the author|no details found|no details available|no details provided|no details/i.test(answer)) {
+  // Lower confidence for empty document answers
+  if (/empty and contain no content to analyze|no content to analyze|document is empty|file is empty|no actual information/i.test(answer)) {
+    confidence = 0.05;
+  } else if (/cannot summarize|cannot provide a summary|unable to summarize|only code|no textual content|not textual|no summary available|no summary|no content to summarize|not possible to summarize|not possible|no information|no info|no useful information|no useful content|no answer|not explicitly mentioned|cannot determine|not found in the documents|not found|no information about the author|no author mentioned|author not mentioned|author unknown|no author info|no author information|no author found|no details about the author|no details found|no details available|no details provided|no details/i.test(answer)) {
     confidence = 0.1;
   } else {
     // Increase confidence for longer answers

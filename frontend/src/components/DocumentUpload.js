@@ -1,19 +1,27 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import axios from 'axios';
 import { Button, Box, Typography, LinearProgress } from '@mui/material';
 import UploadFileIcon   from '@mui/icons-material/UploadFile';
 
 const DocumentUpload = ({ onUploadSuccess }) => {
+  const [documents, setDocuments] = useState([]);
+  const [parentId, setParentId] = useState('');
   const fileInputRef = useRef();
   const [uploading, setUploading] = useState(false);
   const [progress, setProgress] = useState(0);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    // Fetch documents for dropdown
+    axios.get('http://localhost:4000/api/documents').then(res => setDocuments(res.data));
+  }, []);
 
   const handleFiles = async (files) => {
     setUploading(true);
     setError('');
     const formData = new FormData();
     Array.from(files).forEach(file => formData.append('files', file));
+    if (parentId) formData.append('parentId', parentId);
     try {
       await axios.post('http://localhost:4000/api/upload', formData, {
         onUploadProgress: (e) => {
@@ -56,7 +64,20 @@ const DocumentUpload = ({ onUploadSuccess }) => {
       onDrop={handleDrop}
       onDragOver={e => e.preventDefault()}
     >
-      {/* Make the upload icon clickable to trigger file input */}
+      {/* Select main document for supporting upload */}
+      <Box sx={{ mb: 2, width: '100%' }}>
+        <Typography variant="body2" sx={{ mb: 1 }}>Link as supporting document (optional):</Typography>
+        <select
+          value={parentId}
+          onChange={e => setParentId(e.target.value)}
+          style={{ width: '100%', padding: '8px', borderRadius: 6, border: '1px solid #ccc', fontSize: 14 }}
+        >
+          <option value="">None (standalone)</option>
+          {documents.map(doc => (
+            <option key={doc.id} value={doc.id}>{doc.name}</option>
+          ))}
+        </select>
+      </Box>
       <Box onClick={() => fileInputRef.current.click()} sx={{ cursor: 'pointer', mb: 2 }}>
         <UploadFileIcon sx={{ fontSize: 48, color: '#888', bgcolor: '#f7f7fa', borderRadius: '50%', p: 1 }} />
       </Box>

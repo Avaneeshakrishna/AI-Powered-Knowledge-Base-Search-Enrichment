@@ -251,35 +251,28 @@ function App() {
             <Box sx={{ mb: 4, boxShadow: 'none', border: 'none', bgcolor: 'transparent', position: 'relative', width: '100%' }}>
               <AnswerDisplay answer={searchResult && searchResult.answer} />
               {/* Show confidence only when AI answer is present, resize and remove completeness word */}
-              {searchResult && searchResult.answer && (
-                <Box sx={{ mt: 2, display: 'flex', alignItems: 'center', gap: 3 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="12" fill="#fff"/><path d="M7 13l3 3 7-7" stroke="#43a047" strokeWidth="2" fill="none"/><circle cx="12" cy="12" r="11" stroke="#43a047" strokeWidth="2" fill="none"/></svg>
-                    <Box>
-                      <Typography variant="body2" sx={{ color: 'success.main', fontWeight: 500, lineHeight: 1 }}>Confidence</Typography>
-                      <Typography variant="body1" sx={{ color: 'success.main', fontWeight: 700, lineHeight: 1 }}>{confidence !== null && confidence !== undefined ? `${Math.round(confidence * 100)}%` : '--'}</Typography>
-                    </Box>
-                  </Box>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    <CompletenessGauge confidence={confidence} small />
-                  </Box>
+              <Box sx={{ mt: 2, display: 'flex', flexDirection: { xs: 'column', sm: 'row' }, gap: 3, alignItems: 'stretch' }}>
+                <Box sx={{ flex: 1, minWidth: 220 }}>
+                  <CompletenessGauge confidence={confidence} small />
                 </Box>
-              )}
+                <Box sx={{ flex: 1, minWidth: 220 }}>
+                  <EnrichmentSuggestions suggestions={suggestions} />
+                </Box>
+              </Box>
               {/* References, citations, sources below AI Answer */}
-              {searchResult && searchResult.citations && searchResult.citations.length > 0 && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>References & Citations</Typography>
-                  <ul style={{ paddingLeft: 20, margin: 0 }}>
-                    {searchResult.citations.map((cite, idx) => (
-                      <li key={idx} style={{ marginBottom: 6 }}>
-                        <Typography variant="body2" sx={{ color: 'text.secondary' }}>{cite}</Typography>
-                      </li>
-                    ))}
-                  </ul>
-                </Box>
-              )}
               <Box sx={{ mt: 3 }}>
-                <EnrichmentSuggestions suggestions={suggestions} />
+                {searchResult && searchResult.citations && searchResult.citations.length > 0 && (
+                  <>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>References & Citations</Typography>
+                    <ul style={{ paddingLeft: 20, margin: 0 }}>
+                      {searchResult.citations.map((cite, idx) => (
+                        <li key={idx} style={{ marginBottom: 6 }}>
+                          <Typography variant="body2" sx={{ color: 'text.secondary' }}>{cite}</Typography>
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                )}
               </Box>
             </Box>
           </Box>
