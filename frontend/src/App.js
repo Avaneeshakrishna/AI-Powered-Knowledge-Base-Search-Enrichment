@@ -52,7 +52,7 @@ function App() {
     setSuggestions([]);
     if(result && result.answer) {
       try {
-        const res = await axios.post('http://localhost:4000/api/completeness', { answer: result.answer });
+        const res = await axios.post('http://localhost:4000/api/completeness', { answer: result.answer, question: result.query });
         setonfidence(res.data.confidence);
         console.log('Completeness confidence:', res.data.confidence);
       } catch {

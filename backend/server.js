@@ -166,7 +166,7 @@ app.post('/api/search', express.json(), async (req, res) => {
 
 // Completeness check
 app.post('/api/completeness', express.json(), (req, res) => {
-  const { answer } = req.body;
+  const { answer, question } = req.body;
   let confidence = 0.3;
   // Lower confidence for empty document answers
   if (/empty and contain no content to analyze|no content to analyze|document is empty|file is empty|no actual information/i.test(answer)) {
@@ -174,12 +174,28 @@ app.post('/api/completeness', express.json(), (req, res) => {
   } else if (/cannot summarize|cannot provide a summary|unable to summarize|only code|no textual content|not textual|no summary available|no summary|no content to summarize|not possible to summarize|not possible|no information|no info|no useful information|no useful content|no answer|not explicitly mentioned|cannot determine|not found in the documents|not found|no information about the author|no author mentioned|author not mentioned|author unknown|no author info|no author information|no author found|no details about the author|no details found|no details available|no details provided|no details/i.test(answer)) {
     confidence = 0.1;
   } else {
+    
+    if (answer.length < 30) confidence -= 0.2;
     // Increase confidence for longer answers
-    if (answer.length > 30) confidence += 0.3;
+    if (answer.length > 100) confidence += 0.3;
     // Increase confidence if sources are cited
     if (/source|document|\.txt|reference|cited/i.test(answer)) confidence += 0.2;
     // Lower confidence if uncertainty phrases are present
-    if (/not enough info|cannot answer|don't know|insufficient|uncertain/i.test(answer)) confidence -= 0.3;
+    if (/not enough info|cannot answer|don't know|insufficient|uncertain|maybe|possibly|unclear|unknown|guess|estimate/i.test(answer)) confidence -= 0.3;
+    // Penalize vague answers
+    if (/vague|general|generic|unclear|not specific|not detailed|not enough detail/i.test(answer)) confidence -= 0.2;
+    // Penalize answers that repeat phrases (simple redundancy check)
+    const sentences = answer.split(/[.!?]/).map(s => s.trim()).filter(Boolean);
+    const uniqueSentences = new Set(sentences);
+    if (uniqueSentences.size < sentences.length - 2) confidence -= 0.1;
+    // Penalize if answer does not mention any keyword from question
+    if (question) {
+      const qWords = question.split(/\W+/).map(w => w.toLowerCase()).filter(w => w.length > 3);
+      const aWords = answer.toLowerCase();
+      let missingKeywords = 0;
+      qWords.forEach(kw => { if (!aWords.includes(kw)) missingKeywords++; });
+      if (missingKeywords > Math.floor(qWords.length / 2)) confidence -= 0.2;
+    }
     // Clamp between 0 and 1
     confidence = Math.max(0, Math.min(1, confidence));
   }
