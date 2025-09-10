@@ -101,8 +101,8 @@ function App() {
       {/* Top header with logo, title, subtitle */}
       <Box sx={{ width: '100%', bgcolor: 'transparent', pt: 3, pb: 2 }}>
         <Container maxWidth="md">
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, position: 'relative', left: '-200px' }}>
-            <Box sx={{ mr: 2, width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+          <Box sx={{ display: 'flex', alignItems: { xs: 'flex-start', sm: 'center' }, mb: 2, flexDirection: { xs: 'column', sm: 'row' }, gap: { xs: 1, sm: 2 } }}>
+            <Box sx={{ mr: { xs: 0, sm: 2 }, mb: { xs: 1, sm: 0 }, width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               onClick={() => {
                 setTab(0);
                 setSearchResult(null);
@@ -113,9 +113,31 @@ function App() {
             >
               <img src="/brain-logo.png" alt="logo" style={{ width: 36, height: 36 }} />
             </Box>
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 550 }}>AI Knowledge Base</Typography>
-              <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Search, analyze, and enrich your documents with AI</Typography>
+            <Box sx={{ maxWidth: { xs: '100%', sm: '80%', md: '600px' }, wordBreak: 'break-word' }}>
+              <Typography
+                variant="h5"
+                sx={{
+                  fontWeight: 550,
+                  fontSize: { xs: '1.3rem', sm: '1.7rem', md: '2rem' },
+                  lineHeight: 1.2,
+                  wordBreak: 'break-word',
+                  maxWidth: { xs: '100%', sm: '80vw', md: '600px' }
+                }}
+              >
+                AI Knowledge Base
+              </Typography>
+              <Typography
+                variant="subtitle2"
+                sx={{
+                  color: 'text.secondary',
+                  fontSize: { xs: '0.9rem', sm: '1.1rem', md: '1.2rem' },
+                  lineHeight: 1.3,
+                  wordBreak: 'break-word',
+                  maxWidth: { xs: '100%', sm: '80vw', md: '600px' }
+                }}
+              >
+                Search, analyze, and enrich your documents with AI
+              </Typography>
             </Box>
           </Box>
         </Container>
@@ -131,10 +153,29 @@ function App() {
         </Container>
       </Box>
       {/* Main content below header */}
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: 4 }}>
+      <Container maxWidth="md" sx={{ py: { xs: 2, sm: 3, md: 4 } }}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: { xs: 'column', md: 'row' },
+            alignItems: { xs: 'stretch', md: 'flex-start' },
+            gap: { xs: 2, sm: 3, md: 4 },
+            width: '100%',
+          }}
+        >
           {/* Left side: Compact document upload and list with tab switch and search */}
-          <Box sx={{ minWidth: 260, maxWidth: 320, flex: '0 0 320px', bgcolor: 'transparent', borderRadius: 3, boxShadow: 'none', p: 2 }}>
+          <Box
+            sx={{
+              minWidth: { xs: '100%', md: 260 },
+              maxWidth: { xs: '100%', md: 320 },
+              flex: { xs: 'none', md: '0 0 320px' },
+              bgcolor: 'transparent',
+              borderRadius: 3,
+              boxShadow: 'none',
+              p: { xs: 1, sm: 2 },
+              mb: { xs: 2, md: 0 },
+            }}
+          >
             {/* Tabs */}
             <Box sx={{ display: 'flex', mb: 2, gap: 0, boxShadow: 'none', border: 'none', bgcolor: 'transparent', borderRadius: 8, overflow: 'hidden', background: 'linear-gradient(90deg, #fafafa 60%, #fff 100%)', p: 0, height: 44 }}>
               <Button
@@ -206,7 +247,7 @@ function App() {
             )}
           </Box>
           {/* Right side: AI answer, completeness, enrichment */}
-          <Box sx={{ flex: 1, minWidth: 340 }}>
+          <Box sx={{ flex: 1, minWidth: { xs: '100%', md: 340 }, maxWidth: '100%' }}>
             <Box sx={{ mb: 4, boxShadow: 'none', border: 'none', bgcolor: 'transparent', position: 'relative', width: '100%' }}>
               <AnswerDisplay answer={searchResult && searchResult.answer} />
               {/* Show confidence only when AI answer is present, resize and remove completeness word */}
