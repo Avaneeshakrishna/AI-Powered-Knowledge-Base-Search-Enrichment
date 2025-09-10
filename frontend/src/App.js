@@ -99,18 +99,30 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       {/* Top header with logo, title, subtitle */}
-  <Box sx={{ width: '100%', bgcolor: 'transparent', pt: 3, pb: 2, boxShadow: '0 2px 8px #e3e3e3' }}>
+      <Box sx={{ width: '100%', bgcolor: 'transparent', pt: 3, pb: 2 }}>
         <Container maxWidth="md">
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 5 }}>
-              <Box sx={{ mr: 2, width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <img src="/brain-logo.png" alt="logo" style={{ width: 36, height: 36 }} />
-              </Box>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, position: 'relative', left: '-200px' }}>
+            <Box sx={{ mr: 2, width: 48, height: 48, borderRadius: 2, bgcolor: 'grey.200', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              onClick={() => {
+                setTab(0);
+                setSearchResult(null);
+                setonfidence(null);
+                setSuggestions([]);
+                setRefreshDocs(r => r + 1);
+              }}
+            >
+              <img src="/brain-logo.png" alt="logo" style={{ width: 36, height: 36 }} />
+            </Box>
             <Box>
-              <Typography variant="h5" sx={{ fontWeight: 700 }}>AI Knowledge Base</Typography>
+              <Typography variant="h5" sx={{ fontWeight: 550 }}>AI Knowledge Base</Typography>
               <Typography variant="subtitle2" sx={{ color: 'text.secondary' }}>Search, analyze, and enrich your documents with AI</Typography>
             </Box>
           </Box>
-          {/* Centered search bar */}
+        </Container>
+        {/* Thin, visible line from left to right end of screen */}
+        <Box sx={{ width: '100vw', height: '0.1px', bgcolor: '#d1d5db', mb: 2, borderRadius: 1, position: 'relative', left: '50%', transform: 'translateX(-50%)' }} />
+        {/* Centered search bar */}
+        <Container maxWidth="md">
           <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
             <Box sx={{ width: '100%', maxWidth: 700 }}>
               <SearchBox onSearchResult={handleSearchResult} onError={handleError} />
@@ -124,20 +136,52 @@ function App() {
           {/* Left side: Compact document upload and list with tab switch and search */}
           <Box sx={{ minWidth: 260, maxWidth: 320, flex: '0 0 320px', bgcolor: 'transparent', borderRadius: 3, boxShadow: 'none', p: 2 }}>
             {/* Tabs */}
-            <Box sx={{ display: 'flex', mb: 2, gap: 1, boxShadow: 'none', border: 'none', bgcolor: 'transparent' }}>
+            <Box sx={{ display: 'flex', mb: 2, gap: 0, boxShadow: 'none', border: 'none', bgcolor: 'transparent', borderRadius: 8, overflow: 'hidden', background: 'linear-gradient(90deg, #fafafa 60%, #fff 100%)', p: 0, height: 44 }}>
               <Button
+                startIcon={<span style={{ display: 'flex', alignItems: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M6 2h9a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zm0 2v16h9V4H6zm2 4h5v2H8V8zm0 4h5v2H8v-2z" stroke="#222" strokeWidth="2"/></svg></span>}
                 variant={tab === 0 ? 'contained' : 'text'}
-                size="small"
+                size="large"
                 onClick={() => setTab(0)}
-                sx={{ flex: 1, borderRadius: 2, fontSize: 13, fontWeight: 600, textTransform: 'none' }}
+                sx={{
+                  flex: 1,
+                  borderRadius: 8,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: tab === 0 ? '0 2px 8px #e3e3e3' : 'none',
+                  bgcolor: tab === 0 ? '#fff' : 'transparent',
+                  color: tab === 0 ? '#222' : '#888',
+                  px: 4,
+                  py: 1,
+                  minHeight: 44,
+                  border: 'none',
+                  transition: 'all 0.2s',
+                  '&:hover': { bgcolor: '#fff', color: '#1976d2' },
+                }}
               >
                 Documents
               </Button>
               <Button
+                startIcon={<span style={{ display: 'flex', alignItems: 'center' }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 2v20m10-10H2" stroke="#222" strokeWidth="2"/><circle cx="12" cy="12" r="10" stroke="#222" strokeWidth="2" fill="#fff"/></svg></span>}
                 variant={tab === 1 ? 'contained' : 'text'}
-                size="small"
+                size="large"
                 onClick={() => setTab(1)}
-                sx={{ flex: 1, borderRadius: 2, fontSize: 13, fontWeight: 600, textTransform: 'none' }}
+                sx={{
+                  flex: 1,
+                  borderRadius: 8,
+                  fontSize: 16,
+                  fontWeight: 600,
+                  textTransform: 'none',
+                  boxShadow: tab === 1 ? '0 2px 8px #e3e3e3' : 'none',
+                  bgcolor: tab === 1 ? '#fff' : 'transparent',
+                  color: tab === 1 ? '#222' : '#888',
+                  px: 4,
+                  py: 1,
+                  minHeight: 44,
+                  border: 'none',
+                  transition: 'all 0.2s',
+                  '&:hover': { bgcolor: '#fff', color: '#1976d2' },
+                }}
               >
                 Upload
               </Button>
@@ -164,10 +208,6 @@ function App() {
           {/* Right side: AI answer, completeness, enrichment */}
           <Box sx={{ flex: 1, minWidth: 340 }}>
             <Box sx={{ mb: 4, boxShadow: 'none', border: 'none', bgcolor: 'transparent', position: 'relative', width: '100%' }}>
-              {/* AI Answer Title */}
-              <Typography variant="h6" sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                AI Answer
-              </Typography>
               <AnswerDisplay answer={searchResult && searchResult.answer} />
               {/* Show confidence only when AI answer is present, resize and remove completeness word */}
               {searchResult && searchResult.answer && (

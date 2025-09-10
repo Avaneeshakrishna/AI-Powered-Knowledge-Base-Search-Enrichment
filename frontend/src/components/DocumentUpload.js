@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 import axios from 'axios';
 import { Button, Box, Typography, LinearProgress } from '@mui/material';
-import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import UploadFileIcon   from '@mui/icons-material/UploadFile';
 
 const DocumentUpload = ({ onUploadSuccess }) => {
   const fileInputRef = useRef();
@@ -58,7 +58,7 @@ const DocumentUpload = ({ onUploadSuccess }) => {
     >
       {/* Make the upload icon clickable to trigger file input */}
       <Box onClick={() => fileInputRef.current.click()} sx={{ cursor: 'pointer', mb: 2 }}>
-        <CloudUploadIcon sx={{ fontSize: 48, color: '#888', bgcolor: '#f7f7fa', borderRadius: '50%', p: 1 }} />
+        <UploadFileIcon sx={{ fontSize: 48, color: '#888', bgcolor: '#f7f7fa', borderRadius: '50%', p: 1 }} />
       </Box>
       <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>Upload Documents</Typography>
       <Typography variant="body2" sx={{ color: '#888', mb: 3 }}>
@@ -79,7 +79,10 @@ const DocumentUpload = ({ onUploadSuccess }) => {
           boxShadow: '0 2px 8px #e3e3e3',
           textTransform: 'none',
           mb: 2,
-          '&:hover': { bgcolor: '#e3e3e3' }
+          '&:hover': { bgcolor: '#e3e3e3' },
+          '&.Mui-focusVisible': { bgcolor: '#f7f7fa' },
+          '&.Mui-active': { bgcolor: '#f7f7fa' },
+          '&.MuiButton-contained:active': { bgcolor: '#f7f7fa' }
         }}
       >
         Browse Files
