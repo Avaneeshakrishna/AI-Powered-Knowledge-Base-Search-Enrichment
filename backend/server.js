@@ -223,18 +223,10 @@ app.post('/api/enrich', express.json(), (req, res) => {
     suggestions.push('Add more detailed files');
   }
 
-  // Extract keywords/topics from the answer (simple approach)
-  const keywordMatches = answer.match(/\b([A-Z][a-zA-Z]{3,})\b/g);
-  if (keywordMatches && keywordMatches.length > 0) {
-    const uniqueKeywords = [...new Set(keywordMatches)].slice(0, 3);
-    uniqueKeywords.forEach(kw => {
-      suggestions.push(`Upload documents about "${kw}"`);
-    });
-  }
-
-  // Suggest based on missing question keywords
+  // Improved keyword extraction: use question keywords, filter out stopwords
   if (question) {
-    const qWords = question.split(/\W+/).map(w => w.toLowerCase()).filter(w => w.length > 3);
+    const stopwords = ['what','which','who','whom','this','that','these','those','is','are','was','were','be','been','being','have','has','had','do','does','did','will','would','shall','should','can','could','may','might','must','the','a','an','and','or','but','if','then','else','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now'];
+    const qWords = question.split(/\W+/).map(w => w.toLowerCase()).filter(w => w.length > 3 && !stopwords.includes(w));
     const aWords = answer.toLowerCase();
     qWords.forEach(kw => {
       if (!aWords.includes(kw)) suggestions.push(`Upload documents covering "${kw}"`);
