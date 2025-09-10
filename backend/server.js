@@ -64,15 +64,12 @@ app.use((req, res, next) => {
 app.post('/api/upload', upload.array('files'), (req, res) => {
   req.files.forEach(file => {
     const id = Date.now() + Math.random();
-    // parentId from formData (if present)
-    let parentId = req.body.parentId || null;
     documents.push({
       id,
       name: file.originalname,
       filename: file.filename,
       path: file.path,
       uploadedAt: new Date().toISOString(),
-      parentId
     });
   });
   res.json({ success: true, count: documents.length });
