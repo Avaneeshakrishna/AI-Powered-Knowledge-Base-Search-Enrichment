@@ -204,7 +204,7 @@ app.post('/api/completeness', express.json(), (req, res) => {
 
 // Enrichment suggestions (improved)
 app.post('/api/enrich', express.json(), (req, res) => {
-  const { answer } = req.body;
+  const { answer, question, userFeedback } = req.body;
   let suggestions = [];
 
   // Check for uncertainty or lack of info
@@ -230,6 +230,43 @@ app.post('/api/enrich', express.json(), (req, res) => {
     uniqueKeywords.forEach(kw => {
       suggestions.push(`Upload documents about "${kw}"`);
     });
+  }
+
+  // Suggest based on missing question keywords
+  if (question) {
+    const qWords = question.split(/\W+/).map(w => w.toLowerCase()).filter(w => w.length > 3);
+    const aWords = answer.toLowerCase();
+    qWords.forEach(kw => {
+      if (!aWords.includes(kw)) suggestions.push(`Upload documents covering "${kw}"`);
+    });
+  }
+
+  // Suggest document type based on question intent
+  if (question && /summary|report|analysis|manual|guide|case study|data|example/i.test(question)) {
+    if (/summary|report/i.test(question)) suggestions.push('Upload a summary report');
+    if (/analysis/i.test(question)) suggestions.push('Upload an analysis document');
+    if (/manual|guide/i.test(question)) suggestions.push('Upload a technical manual or guide');
+    if (/case study/i.test(question)) suggestions.push('Upload case studies');
+    if (/data/i.test(question)) suggestions.push('Add quantitative data');
+    if (/example/i.test(question)) suggestions.push('Provide example documents');
+  }
+
+  // Source diversity: if only one document is cited
+  const citedDocs = answer.match(/Document: ([^\s]+)/g);
+  if (citedDocs && citedDocs.length === 1) suggestions.push('Upload more documents for broader coverage');
+
+  // Vague/redundant answer detection
+  if (/vague|generic|unclear|not specific|not detailed|not enough detail/i.test(answer)) {
+    suggestions.push('Clarify document content or add more specific details');
+  }
+  // Redundancy: repeated sentences
+  const sentences = answer.split(/[.!?]/).map(s => s.trim()).filter(Boolean);
+  const uniqueSentences = new Set(sentences);
+  if (uniqueSentences.size < sentences.length - 2) suggestions.push('Remove duplicate information from your documents');
+
+  // User feedback integration
+  if (userFeedback && userFeedback.incomplete) {
+    suggestions.push('User marked answer as incomplete. Please upload more relevant documents or clarify content.');
   }
 
   // Fallback if no suggestions
